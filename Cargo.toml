@@ -1,5 +1,5 @@
 [package]
-name = "hello_world"
+name = "rustless"
 version = "0.1.0"
 edition = "2021"
 
