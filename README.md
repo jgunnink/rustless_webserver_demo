@@ -4,6 +4,8 @@ A serverless web service
 
 Everything is included to demo deploying to Cloud Run on GCP.
 
+Related Blogpost explaining in more detail how all this works: [https://jeanklaas.com/blog/rustless-serverless-rust/](https://jeanklaas.com/blog/rustless-serverless-rust/)
+
 ## Getting started
 
 You can run this locally if you like by building the docker image and running it.
