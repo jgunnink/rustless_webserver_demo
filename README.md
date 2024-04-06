@@ -4,7 +4,7 @@ A serverless web service
 
 Everything is included to demo deploying to Cloud Run on GCP.
 
-Related Blogpost explaining in more detail how all this works: [https://jeanklaas.com/blog/rustless-serverless-rust/](https://jeanklaas.com/blog/rustless-serverless-rust/)
+Related Blogpost explaining in more detail how all this works: [https://jgunnink.substack.com/p/rustless-serverless-rust](https://jgunnink.substack.com/p/rustless-serverless-rust)
 
 ## Getting started
 
