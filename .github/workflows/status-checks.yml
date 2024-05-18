@@ -1,0 +1,14 @@
+name: Status Checks
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    name: cargo check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check
