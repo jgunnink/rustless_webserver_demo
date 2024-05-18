@@ -1,30 +1,50 @@
 #![deny(warnings)]
 
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Request, Response, Server};
+// This code is copied and adapted from the hyper.rs guides.
+// Last retrieved on Sun 19th May 2024 at: https://hyper.rs/guides/1/server/hello-world/
+
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
-async fn rustless(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new("Hello, Rustless!".into()))
+use http_body_util::Full;
+use hyper::body::Bytes;
+use hyper::server::conn::http1;
+use hyper::service::service_fn;
+use hyper::{Request, Response};
+use hyper_util::rt::TokioIo;
+use tokio::net::TcpListener;
+
+// An async function that consumes a request, does nothing with it and returns a
+// response.
+async fn rustless(_: Request<impl hyper::body::Body>) -> Result<Response<Full<Bytes>>, Infallible> {
+    Ok(Response::new(Full::new(Bytes::from("Hello, Rustless!"))))
 }
 
 #[tokio::main]
-async fn main() {
-    // Bind to 127.0.0.1:8080
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
 
-    // A `Service` is needed for every connection, so this
-    // creates one from our `rustless` function.
-    let make_svc = make_service_fn(|_conn| async {
-        // service_fn converts our function into a `Service`
-        Ok::<_, Infallible>(service_fn(rustless))
-    });
+    // We create a TcpListener and bind it to 0.0.0.0:8080
+    let listener = TcpListener::bind(addr).await?;
 
-    let server = Server::bind(&addr).serve(make_svc);
+    // We start a loop to continuously accept incoming connections
+    loop {
+        let (stream, _) = listener.accept().await?;
 
-    // Run this server for... forever!
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
+        // Use an adapter to access something implementing `tokio::io` traits as if they implement
+        // `hyper::rt` IO traits.
+        let io = TokioIo::new(stream);
+
+        // Spawn a tokio task to serve multiple connections concurrently
+        tokio::task::spawn(async move {
+            // Finally, we bind the incoming connection to our `hello` service
+            if let Err(err) = http1::Builder::new()
+                // `service_fn` converts our function in a `Service`
+                .serve_connection(io, service_fn(rustless))
+                .await
+            {
+                eprintln!("Error serving connection: {:?}", err);
+            }
+        });
     }
 }
